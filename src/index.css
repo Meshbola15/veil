@@ -1,0 +1,301 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap');
+@import "tailwindcss";
+
+
+/* ============================================
+   SCANLY — Design Tokens
+   Tailwind v4 CSS-first configuration
+   ============================================ */
+
+@theme {
+
+  /* ── Fonts ───────────────────────────────── */
+  --font-inter: "Inter", sans-serif;
+  --font-manrope: "Manrope", sans-serif;
+
+  /* ── Colors ──────────────────────────────── */
+
+  /* Base */
+  /* --color-background: #E5E5E5; */
+  --color-background: #f5f5f5;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B6B6B;
+  --color-text-disabled: #ADADAD;
+  --color-border: #E0E0E0;
+
+  /* Score tiers */
+  --color-score-safe: #4CAF50;
+  --color-score-safe-light: #E8F5E9;
+  --color-score-caution: #F5A623;
+  --color-score-caution-light: #FFF8EC;
+  --color-score-avoid: #E53935;
+  --color-score-avoid-light: #FDECEA;
+
+  /* Accent */
+  --color-accent: #2563EB;
+  --color-accent-muted: #64748B;
+
+  /* ── Border Radius ───────────────────────── */
+  --radius-card: 30px;
+  --radius-chip: 100px;
+  --radius-badge: 12px;
+  --radius-input: 16px;
+
+  /* ── Shadows ─────────────────────────────── */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-modal: 0 20px 60px 0 rgb(0 0 0 / 0.12);
+  --shadow-fab: 0 4px 16px 0 rgb(0 0 0 / 0.14);
+
+  /* ── Spacing ─────────────────────────────── */
+  --spacing-card-padding: 20px;
+  --spacing-section-gap: 24px;
+  --spacing-card-gap: 16px;
+
+  /* ── Z-index ─────────────────────────────── */
+  --z-scanner: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+  --z-nav: 40;
+
+  /* ── Transitions ─────────────────────────── */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+
+
+  --font-xlarge: 2.25rem;
+  --font-large: 1.5rem;
+  --font-medium: 1.25rem;
+  --font-small: 1rem;
+  --font-xsmall: 0.875rem;
+
+}
+
+/* Safe-area utilities (Tailwind @utility so they work in className and @apply) */
+@utility safe-top {
+  padding-top: max(0.75rem, var(--safe-area-inset-top));
+}
+
+@utility safe-bottom {
+  padding-bottom: max(1rem, var(--safe-area-inset-bottom));
+}
+
+@utility pt-safe {
+  padding-top: var(--safe-area-inset-top);
+}
+
+@utility pb-safe {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+@utility pl-safe {
+  padding-left: var(--safe-area-inset-left);
+}
+
+@utility pr-safe {
+  padding-right: var(--safe-area-inset-right);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+@layer base {
+
+  /*
+   * Capacitor plugin writes --safe-area-inset-* in px on native.
+   * env() is the fallback for mobile Safari / dev in browser.
+   */
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  }
+
+  html {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-inter);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* Apply Fraunces to all numeric score displays */
+  .font-fraunces {
+    font-family: var(--font-fraunces);
+    font-optical-sizing: auto;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .section-container {
+    @apply flex flex-col gap-3 rounded-2xl bg-white p-4;
+  }
+
+
+
+}
+
+/* ============================================
+   Component Utilities
+   ============================================ */
+
+@layer components {
+
+  /* Card */
+  .card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: var(--spacing-card-padding);
+    width: 100%;
+  }
+
+  /* Score tier backgrounds */
+  .score-safe {
+    color: var(--color-score-safe);
+    background-color: var(--color-score-safe-light);
+  }
+
+  .score-caution {
+    color: var(--color-score-caution);
+    background-color: var(--color-score-caution-light);
+  }
+
+  .score-avoid {
+    color: var(--color-score-avoid);
+    background-color: var(--color-score-avoid-light);
+  }
+
+  /* Chip / tag */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: var(--radius-chip);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.5;
+    background-color: var(--color-background);
+    color: var(--color-text-secondary);
+  }
+
+  /* FAB (Scan button) */
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    color: #fff;
+    box-shadow: var(--shadow-fab);
+    transition: transform var(--duration-fast) var(--ease-spring);
+  }
+
+  .fab:active {
+    transform: scale(0.93);
+  }
+
+  /* Mobile app shell — layout only; add safe-top/safe-bottom per screen */
+  .mobile-screen {
+    width: 100%;
+    max-width: 100%;
+    touch-action: manipulation;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Onboarding — reference layout typography */
+  .onboarding-title {
+    font-family: var(--font-fraunces);
+    font-size: clamp(2.25rem, 9vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+
+  .onboarding-body strong {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  /* Onboarding welcome + question steps */
+  .onboarding-gradient {
+    background: linear-gradient(165deg,
+        #9b8ec4 0%,
+        #b8a8d4 28%,
+        #c4b8e0 52%,
+        #a8b8e8 78%,
+        #8fa8d8 100%);
+  }
+
+  .onboarding-tag-inputs label {
+    color: #fff;
+  }
+
+  /* html5-qrcode — full-screen live camera */
+  .barcode-scanner-region {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .barcode-scanner-region>div {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .barcode-scanner-region video {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
+  .barcode-scanner-region #qr-shaded-region,
+  .barcode-scanner-region [id^="qr-shaded-region"] {
+    display: none !important;
+    border-color: transparent !important;
+    background: transparent !important;
+  }
+
+
+
+}
