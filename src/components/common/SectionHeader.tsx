@@ -22,7 +22,7 @@ export function SectionHeader({
             className="size-5 shrink-0 object-contain"
           />
         )}
-        <h4 className="font-fraunces text-lg font-bold text-text-primary">
+        <h4 className="font-bricolage text-lg font-bold text-text-primary">
           {title}
         </h4>
       </div>

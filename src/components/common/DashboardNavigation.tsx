@@ -32,7 +32,9 @@ const DashboardNavigation = (props: Props) => {
       link: "/search",
     },
     {
-      label: "",
+      label: "Scan",
+      icon: <ScanIcon size={24} />,
+      link: "/scan",
     },
 
     {
@@ -43,7 +45,7 @@ const DashboardNavigation = (props: Props) => {
 
     {
       icon: <ProfileIcon size={24} />,
-      label: "Profile",
+      label: "Me",
       link: "/profile",
     },
   ];
@@ -77,13 +79,6 @@ const DashboardNavigation = (props: Props) => {
               </p>
             </div>
           ))}
-
-          <Button
-            onClick={() => navigate("/scan")}
-            className="absolute translate-x-1/2 -top-full right-1/2 mx-auto size-[60px] p-0 flex items-center justify-center"
-          >
-            <ScanIcon size={30} />
-          </Button>
         </div>
       </div>
     </div>

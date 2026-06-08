@@ -30,6 +30,13 @@ type Props = {
 };
 
 /**
+ * Minimum gap between accepted detections so a single barcode held in frame
+ * isn't reported on every camera frame. Detection keeps running continuously,
+ * even while a result is already on screen.
+ */
+const DETECTION_COOLDOWN_MS = 1000;
+
+/**
  * Owns the Html5Qrcode lifecycle only. UI state (flash, sound, overlays)
  * lives in sibling components so scanner start/stop is not retriggered.
  */
@@ -42,7 +49,7 @@ function BarcodeScannerEngine({
   const regionId = useId().replace(/:/g, "");
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const pausedRef = useRef(detectionPaused);
-  const handlingRef = useRef(false);
+  const lastAcceptedAtRef = useRef(0);
   const onDetectedRef = useRef(onBarcodeDetected);
 
   const [ready, setReady] = useState(false);
@@ -51,13 +58,10 @@ function BarcodeScannerEngine({
   pausedRef.current = detectionPaused;
   onDetectedRef.current = onBarcodeDetected;
 
-  if (!detectionPaused) {
-    handlingRef.current = false;
-  }
-
+  // Re-arm immediately when a new scan session begins (e.g. result dismissed).
   useEffect(() => {
-    handlingRef.current = false;
-  }, [scanSession, detectionPaused]);
+    lastAcceptedAtRef.current = 0;
+  }, [scanSession]);
 
   const fitCameraToScreen = useCallback(() => {
     fitScannerRegionToScreen(regionId);
@@ -105,8 +109,10 @@ function BarcodeScannerEngine({
           },
         },
         (text, result) => {
-          if (pausedRef.current || handlingRef.current) return;
-          handlingRef.current = true;
+          if (pausedRef.current) return;
+          const now = Date.now();
+          if (now - lastAcceptedAtRef.current < DETECTION_COOLDOWN_MS) return;
+          lastAcceptedAtRef.current = now;
           const formatCode = result.result.format?.format;
           onDetectedRef.current(mapHtml5Detection(text, formatCode));
         },

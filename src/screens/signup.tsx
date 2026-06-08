@@ -83,7 +83,7 @@ export default function LoginPage() {
         </div>
 
         <div className="flex flex-col items-center justify-center max-w-[80%] mx-auto text-center mb-6">
-          <h1 className="font-fraunces text-[1.875rem] leading-[1.1] font-semibold tracking-tight text-text-primary">
+          <h1 className="font-bricolage text-[1.875rem] leading-[1.1] font-semibold tracking-tight text-text-primary">
             Sign in to continue
           </h1>
           <p className="mt-4 max-w-[320px] font-inter text-[15px] leading-relaxed text-text-secondary">

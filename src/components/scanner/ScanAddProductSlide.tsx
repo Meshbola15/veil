@@ -6,9 +6,9 @@ type Props = {
 
 export function ScanAddProductSlide({ onAdd }: Props) {
   return (
-    <div className="section-container flex flex-col gap-4">
+    <div className="section-container flex flex-col gap-4 p-4 w-full">
       <div className="flex w-full flex-col gap-2">
-        <h5 className="font-fraunces text-lg font-extrabold text-text-primary">
+        <h5 className="font-bricolage text-lg font-extrabold text-text-primary">
           Unknown Product
         </h5>
 
@@ -19,10 +19,10 @@ export function ScanAddProductSlide({ onAdd }: Props) {
           </p>
         </div>
 
-        <p className="font-inter text-sm text-text-secondary">
+        {/* <p className="font-inter text-sm text-text-secondary">
           None of these matches look right? Add this barcode to the community
           catalog.
-        </p>
+        </p> */}
 
         <Button
           onClick={() => onAdd?.()}

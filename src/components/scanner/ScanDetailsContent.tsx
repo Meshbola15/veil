@@ -16,7 +16,13 @@ export function ScanDetailsContent({
   onAddProduct,
 }: ScanDetailsContentProps) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col safe-bottom">
+    <div
+      className={
+        expanded
+          ? "flex min-h-0 flex-1 flex-col"
+          : "flex h-full min-h-0 flex-col"
+      }
+    >
       <ScanResultsCarousel
         scanResults={scanResults}
         expanded={expanded}

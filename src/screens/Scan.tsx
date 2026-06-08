@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Camera from "@/components/scanner/camera";
 import { ScanResultSheet } from "@/components/scanner/ScanResultSheet";
@@ -20,10 +20,18 @@ export default function ScanPage() {
   const [scanSession, setScanSession] = useState(0);
   const [soundMuted, setSoundMuted] = useState(true);
 
-  const isSheetVisible = Boolean(detection && scanResults && scanResults.length > 0);
+  // Tracks the barcode currently on screen so the same product held in frame
+  // doesn't keep re-firing while a different product replaces the result.
+  const activeBarcodeRef = useRef<string | null>(null);
+
+  const isSheetVisible = Boolean(
+    detection && scanResults && scanResults.length > 0,
+  );
 
   const handleBarcodeDetected = useCallback(
     (result: BarcodeDetection) => {
+      if (activeBarcodeRef.current === result.value) return;
+      activeBarcodeRef.current = result.value;
       const matches = mockResultsForBarcode(result.value);
       const primary = matches[0]!;
       setDetection(result);
@@ -39,6 +47,7 @@ export default function ScanPage() {
   );
 
   const handleDismissResult = () => {
+    activeBarcodeRef.current = null;
     setDetection(null);
     setScanResults(null);
     setCurrentResult(null);
@@ -57,7 +66,7 @@ export default function ScanPage() {
   return (
     <div className="mobile-screen relative h-dvh overflow-hidden bg-black">
       <Camera
-        detectionPaused={isSheetVisible}
+        detectionPaused={false}
         scanSession={scanSession}
         onBarcodeDetected={handleBarcodeDetected}
         onClose={handleClose}

@@ -13,12 +13,17 @@ import { TbChartPie4Filled as OverviewIcon } from "react-icons/tb";
 import { TiArrowSortedDown as ArrowDownIcon } from "react-icons/ti";
 import { IoHeartOutline as FavoritesIcon } from "react-icons/io5";
 import { IoHeart as FavoritesSolidIcon } from "react-icons/io5";
-import { PiShareFat as ShareIcon } from "react-icons/pi";
+// import { PiShareFat as ShareIcon } from "react-icons/pi";
+import { FiShare as ShareIcon } from "react-icons/fi";
 import { BsThreeDotsVertical as ThreeDotsIcon } from "react-icons/bs";
 import { IoChevronDown as ChevronDownIcon } from "react-icons/io5";
 import { IoInformationCircleOutline as InfoIcon } from "react-icons/io5";
 import { IoClose as CloseIcon } from "react-icons/io5";
-
+import { IoIosArrowForward as ArrowForwardIcon } from "react-icons/io";
+import { RiSearch2Line as SearchIconOutline } from "react-icons/ri";
+import { MdFlashlightOn as FlashlightOnIcon } from "react-icons/md";
+import { MdFlashlightOff as FlashlightOffIcon } from "react-icons/md";
+import { IoChatbubbleOutline as MessageCircleIcon } from "react-icons/io5";
 
 export {
   BackIcon,
@@ -41,4 +46,9 @@ export {
   ChevronDownIcon,
   InfoIcon,
   CloseIcon,
+  ArrowForwardIcon,
+  SearchIconOutline,
+  FlashlightOnIcon,
+  FlashlightOffIcon,
+  MessageCircleIcon,
 };

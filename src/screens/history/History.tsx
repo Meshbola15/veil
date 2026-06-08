@@ -42,7 +42,7 @@ const History = (props: Props) => {
   //         />
   //       </div>
   //       <div className="flex flex-col gap-2 w-full">
-  //         <h5 className="font-fraunces text-lg text-text-primary font-bold">
+  //         <h5 className="font-bricolage text-lg text-text-primary font-bold">
   //           {item.name}
   //         </h5>
 
@@ -56,7 +56,7 @@ const History = (props: Props) => {
   //             />
 
   //             <div>
-  //               <p className="text-lg font-bold font-fraunces">
+  //               <p className="text-lg font-bold font-bricolage">
   //                 {item.score}/100
   //               </p>
   //               <p className="text-sm font-bold text-text-secondary font-inter">
@@ -105,22 +105,12 @@ const History = (props: Props) => {
   return (
     <div className="mobile-screen h-dvh overflow-scroll safe-top safe-bottom bg-background p-4 relative">
       <DashboardHeader
-        customHeader={
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold font-fraunces text-wrap">
-              History
-            </h1>
-            {/* <button onClick={openFavoutitesModal}>
-              <FavoritesIcon size={24} />
-            </button> */}
-          </div>
-        }
+        headerTitle="History"
+        showBackButton={false}
         rightComponents={
-          <div>
-            <button onClick={() => setIsFavouritesModalOpen(true)}>
-              <FavoritesIcon size={24} />
-            </button>
-          </div>
+          <button onClick={() => setIsFavouritesModalOpen(true)}>
+            <FavoritesIcon size={24} />
+          </button>
         }
       />
 

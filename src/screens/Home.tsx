@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="mobile-screen h-[100dvh] overflow-hidden bg-background">
       <div className="safe-top safe-bottom h-full overflow-y-auto px-5 py-8">
-        <h1 className="font-fraunces text-2xl font-semibold text-text-primary">
+        <h1 className="font-bricolage text-2xl font-semibold text-text-primary">
           {name ? `Welcome, ${name}` : "Welcome"}
         </h1>
         <p className="mt-2 font-inter text-sm text-text-secondary">

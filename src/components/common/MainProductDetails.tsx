@@ -8,6 +8,8 @@ import { PetSafetyList } from "@/components/history/PetSafetyList";
 import {
   ChevronDownIcon,
   FavoritesIcon,
+  InfoIcon,
+  MessageCircleIcon,
   ShareIcon,
   ThreeDotsIcon,
 } from "@/lib/icons";
@@ -83,11 +85,46 @@ const MainProductDetails = ({ item: itemProp, showBody = true }: Props) => {
     );
   };
 
+  const IngredientsCount = ({ text }: { text: string }) => (
+    <p className="text-sm capitalize text-nowrap font-inter font-[600] text-text-neutral">
+      {text}
+    </p>
+  );
+
+  const ActionCards = ({
+    title,
+    icon,
+    onClick,
+    rightComponent,
+  }: {
+    title: string;
+    icon: React.ReactNode;
+    onClick: () => void;
+    rightComponent?: React.ReactNode;
+  }) => {
+    return (
+      <div className="p-4 bg-white rounded-2xl shadow-card flex flex-row gap">
+        <div className="flex flex-row gap-2">
+          {icon}
+          <p className="text-sm font-inter font-[600] text-text-primary">
+            {title}
+          </p>
+        </div>
+        {rightComponent && rightComponent}
+      </div>
+    );
+  };
+
   const [isIngredientsListExpanded, setIsIngredientsListExpanded] =
     useState(false);
   return (
     <main className="flex flex-col gap-4">
-      <ProductDetails item={item} />
+      <ProductDetails
+        item={item}
+        showFavourites={false}
+        showShare={false}
+        isFavourite={false}
+      />
 
       <AnimatePresence mode="wait">
         {showBody && (
@@ -105,26 +142,23 @@ const MainProductDetails = ({ item: itemProp, showBody = true }: Props) => {
                 image={images.IngredientsIcon}
               />
 
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-text-secondary capitalize">
-                  {ingredientsTeir.high +
-                    ingredientsTeir.moderate +
-                    ingredientsTeir.low}{" "}
-                  ingredients
-                </p>
+              <div className="flex items-center gap-1 flex-wrap">
+                <IngredientsCount
+                  text={`${ingredientsTeir.high + ingredientsTeir.moderate + ingredientsTeir.low} ingredients`}
+                />
 
                 <DotSeperator />
-                <p className="text-sm text-text-secondary capitalize">
-                  {ingredientsTeir.high} high concern
-                </p>
+                <IngredientsCount
+                  text={`${ingredientsTeir.high} high concern`}
+                />
+
                 <DotSeperator />
-                <p className="text-sm text-text-secondary capitalize">
-                  {ingredientsTeir.moderate} moderate
-                </p>
+                <IngredientsCount
+                  text={`${ingredientsTeir.moderate} moderate`}
+                />
+
                 <DotSeperator />
-                <p className="text-sm text-text-secondary capitalize">
-                  {ingredientsTeir.low} low
-                </p>
+                <IngredientsCount text={`${ingredientsTeir.low} low`} />
               </div>
 
               <div className="flex items-center gap-0.5 my-4">
@@ -171,31 +205,15 @@ const MainProductDetails = ({ item: itemProp, showBody = true }: Props) => {
               <SectionHeader
                 title="Ingredients list"
                 image={images.IngredientsIcon}
-                // rightComponent={
-                //   <motion.div
-                //     initial={false}
-                //     animate={
-                //       isIngredientsListExpanded ? "expanded" : "collapsed"
-                //     }
-                //     variants={{
-                //       expanded: { rotate: 180 },
-                //       collapsed: { rotate: 0 },
-                //     }}
-                //   >
-                //     <ChevronDownIcon size={24} />
-                //   </motion.div>
-                // }
               />
               <div className="flex flex-wrap gap-0.5">
                 {item.ingredients.map((ingredient, index) => (
                   <div key={ingredient} className="flex items-center">
-                    <p className=" text-sm font-inter text-text-primary">
+                    <p className=" text-sm font-inter text-text-secondary">
                       {ingredient}
                     </p>
                     {index < item.ingredients.length - 1 && (
-                      <span className="text-sm text-text-secondary font-semibold font-inter">
-                        ,
-                      </span>
+                      <span className="text-sm text-text-secondary">,</span>
                     )}
                   </div>
                 ))}
@@ -204,6 +222,28 @@ const MainProductDetails = ({ item: itemProp, showBody = true }: Props) => {
             <div className="flex flex-col gap-2 rounded-2xl bg-white p-4">
               <SectionHeader title="Pet Safety" image={images.PetSafetyIcon} />
               <PetSafetyList petFlags={item.petFlags} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <ActionCards
+                title="Add to favourites"
+                icon={<FavoritesIcon className="size-5" />}
+                onClick={() => {}}
+              />
+              {/* <ActionCards
+                title="Ask Veil AI"
+                icon={<MessageCircleIcon className="size-5" />}
+                onClick={() => {}}
+              /> */}
+              <ActionCards
+                title="Share"
+                icon={<ShareIcon className="size-5" />}
+                onClick={() => {}}
+              />
+              <ActionCards
+                title="Report"
+                icon={<InfoIcon className="size-5" />}
+                onClick={() => {}}
+              />
             </div>
           </motion.div>
         )}

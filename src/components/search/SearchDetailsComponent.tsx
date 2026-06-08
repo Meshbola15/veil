@@ -22,7 +22,7 @@ const SearchDetailsComponent = ({ results }: Props) => {
             <p className="font-inter text-sm text-text-secondary">
               {result.brand}
             </p>
-            <p className="font-fraunces text-sm font-semibold text-text-primary">
+            <p className="font-bricolage text-sm font-semibold text-text-primary">
               {result.score}/100
             </p>
           </div>

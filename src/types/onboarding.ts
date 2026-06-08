@@ -14,6 +14,7 @@ export interface OnboardingData {
   dietaryPreferences: string[];
   hasPets: boolean;
   pets: Pet[];
+  profileImageUrl?: string;
   notificationsEnabled: boolean;
   cameraPermissionGranted: boolean;
 }

@@ -13,9 +13,12 @@ import Hammer from "hammerjs";
 import { ScanDetailsContent } from "@/components/scanner/ScanDetailsContent";
 import type { BarcodeDetection } from "@/lib/scanner/barcode";
 import type { ScanResult } from "@/types";
+import {
+  SCAN_SHEET_PEEK_CONTENT_PX,
+  SCAN_SHEET_PEEK_HEIGHT_PX,
+} from "@/lib/scanner/scanSheetLayout";
 
-/** Visible height of the collapsed (peek) card */
-const PEEK_HEIGHT_PX = 200;
+const PEEK_HEIGHT_PX = SCAN_SHEET_PEEK_HEIGHT_PX;
 /** Drag down this many px past peek before we dismiss */
 const DISMISS_DRAG_PX = 56;
 /** Fling speed (px/ms) needed to snap without dragging far */
@@ -202,7 +205,16 @@ export function ScanResultSheet({
 
         <div
           ref={contentRef}
-          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+          className={
+            isExpanded
+              ? "flex min-h-0 flex-1 flex-col overflow-hidden"
+              : "flex shrink-0 flex-col overflow-hidden"
+          }
+          style={
+            isExpanded
+              ? undefined
+              : { height: SCAN_SHEET_PEEK_CONTENT_PX }
+          }
         >
           <ScanDetailsContent
             detection={detection}

@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
 
@@ -10,21 +11,24 @@
 @theme {
 
   /* ── Fonts ───────────────────────────────── */
+  --font-bricolage: "Bricolage Grotesque", serif;
   --font-inter: "Inter", sans-serif;
+  --font-raleway: "Raleway", sans-serif;
   --font-manrope: "Manrope", sans-serif;
 
   /* ── Colors ──────────────────────────────── */
 
   /* Base */
   /* --color-background: #E5E5E5; */
-  --color-background: #f5f5f5;
+  --color-background: #f5f5f7;
+  /* --color-background: #f5f5f5; */
   --color-surface: #FFFFFF;
   --color-text-primary: #1A1A1A;
   --color-text-secondary: #6B6B6B;
   --color-text-disabled: #ADADAD;
   --color-border: #E0E0E0;
 
-  /* Score tiers */
+
   --color-score-safe: #4CAF50;
   --color-score-safe-light: #E8F5E9;
   --color-score-caution: #F5A623;
@@ -99,6 +103,7 @@
   padding-right: var(--safe-area-inset-right);
 }
 
+
 /* ============================================
    Base Styles
    ============================================ */
@@ -152,9 +157,29 @@
   }
 
   .section-container {
-    @apply flex flex-col gap-3 rounded-2xl bg-white p-4;
+    @apply flex flex-col gap-3 rounded-3xl bg-white p-4 shadow;
   }
 
+  .text-text-neutral {
+    @apply text-neutral-400;
+  }
+
+  .text-text-secondary {
+    @apply text-text-secondary;
+  }
+
+  .text-text-primary {
+    @apply text-text-primary;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-bricolage);
+  }
 
 
 }
@@ -295,7 +320,5 @@
     border-color: transparent !important;
     background: transparent !important;
   }
-
-
 
 }

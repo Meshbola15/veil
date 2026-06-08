@@ -5,6 +5,7 @@ import { images } from "@/assets/images";
 import { cn } from "@/lib/utils";
 import SearchDetailsComponent from "@/components/search/SearchDetailsComponent";
 import { filterMockSearchResults } from "@/data/mock";
+import { SearchIcon } from "lucide-react";
 
 type Props = {};
 
@@ -33,25 +34,16 @@ const Search = (props: Props) => {
       name: "Personal Care",
       bgColor: "bg-yellow-300/40",
     },
-    {
-      id: "5",
-      name: "Home",
-      bgColor: "bg-purple-300/40",
-    },
-    {
-      id: "6",
-      name: "Other",
-      bgColor: "bg-orange-300/40",
-    },
   ];
 
   const SearchBar = () => {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="w-full p-3 rounded-2xl border border-gray-300 flex items-center gap-2">
+        <SearchIcon className="size-5 text-neutral-600" />
         <input
           type="text"
           placeholder="Product name, brand or barcode"
-          className="w-full p-3 rounded-2xl border border-gray-300"
+          className="w-full outline-none text-sm font-inter font-semibold text-neutral-600"
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
@@ -76,7 +68,7 @@ const Search = (props: Props) => {
                   category.bgColor,
                 )}
               >
-                <h2 className="text-lg font-bold font-fraunces text-text-primary">
+                <h2 className="text-lg font-bold font-bricolage text-text-primary">
                   {category.name}
                 </h2>
               </div>

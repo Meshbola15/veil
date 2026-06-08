@@ -50,7 +50,7 @@ export function BarcodeResultModal({
 
         <h2
           id="barcode-result-title"
-          className="font-fraunces text-xl font-semibold text-text-primary"
+          className="font-bricolage text-xl font-semibold text-text-primary"
         >
           Barcode detected
         </h2>
@@ -66,7 +66,7 @@ export function BarcodeResultModal({
               <dt className="font-inter text-xs font-medium uppercase tracking-wide text-text-secondary">
                 Your score
               </dt>
-              <dd className="mt-1 font-fraunces text-2xl font-semibold text-text-primary">
+              <dd className="mt-1 font-bricolage text-2xl font-semibold text-text-primary">
                 {scanResult.score}
               </dd>
             </div>

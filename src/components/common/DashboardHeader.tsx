@@ -17,17 +17,27 @@ const DashboardHeader = ({
   customHeader,
 }: Props) => {
   return (
-    <div className="p-4 px-2">
-      <div className="flex items-start justify-between gap-4">
+    <div className="py-5">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           {showBackButton && (
             <button onClick={onBack}>
               <ChevronBackIcon size={24} />
             </button>
           )}
-          {customHeader || <h1 className="text-xl font-bold font-fraunces text-wrap">{headerTitle}</h1>}
         </div>
-        <div className="flex items-center gap-2">{rightComponents}</div>
+        {customHeader || (
+          <h1 className="text-xl font-bold font-bricolage text-wrap">
+            {headerTitle}
+          </h1>
+        )}
+        <div>
+          {rightComponents ? (
+            <div className="flex items-center gap-2">{rightComponents}</div>
+          ) : (
+            <div className="w-10" />
+          )}
+        </div>
       </div>
     </div>
   );

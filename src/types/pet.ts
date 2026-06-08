@@ -10,8 +10,13 @@ export type PetSpecies =
 export interface Pet {
   id: string;
   name: string;
+  image?: string;
   species: PetSpecies;
   breed?: string;
+  /** e.g. "3 years", "8 months" */
+  age?: string;
+  /** Ongoing conditions — e.g. asthma, arthritis */
+  healthConditions?: string[];
 }
 
 export const PET_SPECIES_OPTIONS: { value: PetSpecies; label: string }[] = [

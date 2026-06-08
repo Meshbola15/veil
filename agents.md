@@ -60,7 +60,7 @@ Veil follows a clean, minimal, editorial aesthetic — light background, white c
 Apply these consistently. Never swap them arbitrarily.
 
 ```css
-font-fraunces  /* Fraunces serif */
+font-bricolage  /* Fraunces serif */
 font-inter     /* Inter sans-serif */
 ```
 

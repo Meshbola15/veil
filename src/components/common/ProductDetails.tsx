@@ -32,7 +32,7 @@ const ProductDetails = ({
       </div>
       <div className="flex flex-col gap-2 w-full">
         <div>
-          <h5 className="font-fraunces text-lg text-text-primary font-bold">
+          <h5 className="font-bricolage text-lg text-text-primary font-bold">
             {item.name}
           </h5>
 
@@ -48,7 +48,7 @@ const ProductDetails = ({
             />
 
             <div>
-              <p className="text-lg font-bold font-fraunces">
+              <p className="text-lg font-bold font-bricolage">
                 {item.score}/100
               </p>
               <p className="text-sm font-bold text-text-secondary font-inter">

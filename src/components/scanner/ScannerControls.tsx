@@ -7,6 +7,8 @@ import {
 } from "react-icons/hi2";
 import { Torch } from "@capawesome/capacitor-torch";
 import { useScannerRuntime } from "@/components/scanner/ScannerRuntimeContext";
+import { cn } from "@/lib/utils";
+import { FlashlightOffIcon, FlashlightOnIcon } from "@/lib/icons";
 
 type Props = {
   soundMuted: boolean;
@@ -38,33 +40,39 @@ function ScannerControls({ soundMuted, onSoundMuted }: Props) {
   }, [flashOn]);
 
   return (
-    <div className="safe-top pointer-events-auto absolute left-0 right-0 top-10 z-40 flex items-center justify-between px-5 pb-3 pt-3">
+    <div className="safe-top pointer-events-auto absolute left-0 right-0 top-4 z-40 flex items-center justify-between px-5 pb-3 pt-3">
       <button
         type="button"
         onClick={() => void toggleFlash()}
         disabled={!ready}
-        className="touch-target flex size-10 items-center justify-center text-white disabled:opacity-40"
+        className={cn(
+          "touch-target flex size-10 items-center justify-center rounded-full",
+          flashOn ? "bg-white text-black" : "bg-black/40 text-white",
+        )}
         aria-label={flashOn ? "Turn flash off" : "Turn flash on"}
         aria-pressed={flashOn}
       >
         {flashOn ? (
-          <HiBolt size={26} strokeWidth={1.75} />
+          <FlashlightOnIcon className="size-5" />
         ) : (
-          <HiOutlineBolt size={26} strokeWidth={1.75} />
+          <FlashlightOffIcon className="size-5" />
         )}
       </button>
 
       <button
         type="button"
         onClick={() => onSoundMuted(!soundMuted)}
-        className="touch-target flex size-10 items-center justify-center text-white"
+        className={cn(
+          "touch-target flex size-10 items-center justify-center rounded-full",
+          soundMuted ? "bg-black/40 text-white" : "bg-white text-black",
+        )}
         aria-label={soundMuted ? "Unmute scan sounds" : "Mute scan sounds"}
         aria-pressed={soundMuted}
       >
         {soundMuted ? (
-          <HiOutlineSpeakerXMark size={26} strokeWidth={1.75} />
+          <HiOutlineSpeakerXMark className="size-5" strokeWidth={1.75} />
         ) : (
-          <HiOutlineSpeakerWave size={26} strokeWidth={1.75} />
+          <HiOutlineSpeakerWave className="size-5" strokeWidth={1.75} />
         )}
       </button>
     </div>

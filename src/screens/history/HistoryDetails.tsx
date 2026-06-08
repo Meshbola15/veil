@@ -21,14 +21,14 @@ const HistoryDetailsPage = () => {
       <DashboardHeader
         headerTitle="History Details"
         showBackButton={true}
-        rightComponents={
-          <div className="relative flex items-center gap-2">
-            <ThreeDotsIcon
-              size={24}
-              onClick={() => setIsMoreOptionsModalOpen(true)}
-            />
-          </div>
-        }
+        // rightComponents={
+        //   <div className="relative flex items-center gap-2">
+        //     <ThreeDotsIcon
+        //       size={24}
+        //       onClick={() => setIsMoreOptionsModalOpen(true)}
+        //     />
+        //   </div>
+        // }
         onBack={() => navigate("/history")}
       />
 

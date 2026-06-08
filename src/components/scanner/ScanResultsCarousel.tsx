@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MainProductDetails from "@/components/common/MainProductDetails";
 import { ScanAddProductSlide } from "@/components/scanner/ScanAddProductSlide";
 import { scanResultToView } from "@/lib/scanner/scanResultView";
-import { cn } from "@/lib/utils";
 import type { ScanResult } from "@/types";
 
 type Props = {
@@ -14,18 +13,13 @@ type Props = {
 function CarouselDots({
   count,
   activeIndex,
-  dimmed,
 }: {
   count: number;
   activeIndex: number;
-  dimmed?: boolean;
 }) {
   return (
     <div
-      className={cn(
-        "flex shrink-0 justify-center gap-1.5 py-3",
-        dimmed && "opacity-60",
-      )}
+      className="flex shrink-0 items-center justify-center gap-1.5 bg-white px-4 pt-0.5"
       role="tablist"
       aria-label="Product matches"
     >
@@ -39,12 +33,11 @@ function CarouselDots({
               ? `Product ${index + 1} of ${count - 1}`
               : "Add new product"
           }
-          className={cn(
-            "h-1.5 rounded-full transition-all duration-200",
+          className={`h-1.5 rounded-full transition-all duration-200 ${
             index === activeIndex
               ? "w-5 bg-text-primary"
-              : "w-1.5 bg-text-disabled",
-          )}
+              : "w-1.5 bg-text-disabled"
+          }`}
         />
       ))}
     </div>
@@ -97,17 +90,12 @@ export function ScanResultsCarousel({
             />
           )}
         </div>
-        <CarouselDots
-          count={slideCount}
-          activeIndex={activeIndex}
-          dimmed
-        />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <div
         ref={scrollRef}
         onScroll={updateIndexFromScroll}
@@ -118,16 +106,18 @@ export function ScanResultsCarousel({
         {scanResults.map((result) => (
           <div
             key={result.product.id}
-            className="h-full min-h-0 w-full shrink-0 snap-start snap-always overflow-hidden px-4"
+            className="flex h-full min-h-0 w-full shrink-0 snap-start snap-always items-stretch overflow-hidden px-4"
           >
-            <MainProductDetails
-              showBody={false}
-              item={scanResultToView(result)}
-            />
+            <div className="flex w-full min-h-0 flex-col justify-center">
+              <MainProductDetails
+                showBody={false}
+                item={scanResultToView(result)}
+              />
+            </div>
           </div>
         ))}
 
-        <div className="h-full min-h-0 w-full shrink-0 snap-start snap-always overflow-hidden px-4 pb-4">
+        <div className="flex h-full min-h-0 w-full shrink-0 snap-start snap-always items-center px-4 py-1">
           <ScanAddProductSlide onAdd={onAddProduct} />
         </div>
       </div>
