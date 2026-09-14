@@ -1,0 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-fraunces: "Fraunces", serif;
+  --font-inter: "Inter", sans-serif;
+  --color-background: #E5E5E5;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B6B6B;
+  --color-text-disabled: #ADADAD;
+  --color-safe: #4CAF50;
+  --color-caution: #F5A623;
+  --color-avoid: #E53935;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-fab: 0 4px 16px rgb(0 0 0 / 0.18);
+}
+
+@layer base {
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: #E5E5E5; font-family: "Inter", sans-serif; color: #1A1A1A; }
+  body { margin: 0; min-width: 320px; min-height: 100dvh; background: #E5E5E5; }
+  button, input, textarea, select { font: inherit; }
+  button { cursor: pointer; }
+}
