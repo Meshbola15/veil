@@ -54,7 +54,7 @@ export function ProductResultPage() {
         <Link to="/app/history" aria-label="History" className="grid size-9 place-items-center rounded-full bg-white shadow-card"><HiOutlineQrCode size={18} /></Link>
       </header>
 
-      <ScreenCard className="mt-5" data-result-section="">
+      <ScreenCard className="mt-5">
         <div data-result-section className="flex items-start justify-between gap-4">
           <ProductBubble emoji={product.imageEmoji} size="large" />
           <ScoreBadge score={score} tier={tier} />
