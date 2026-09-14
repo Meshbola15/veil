@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { HiOutlineChevronLeft, HiOutlineClock, HiOutlineKeyboard } from "react-icons/hi2";
+import { HiOutlineChevronLeft, HiOutlineClock, HiOutlineKey } from "react-icons/hi2";
 import { Link, useNavigate } from "react-router-dom";
 import { CameraScanner } from "../components/scanner/CameraScanner";
 import { demoProducts } from "../lib/products";
@@ -35,7 +35,7 @@ export function ScanPage() {
 
       <CameraScanner onDetected={openResult} />
       <form onSubmit={submit} className="mt-4 rounded-[30px] bg-white p-5 text-[#1A1A1A] shadow-card">
-        <label htmlFor="manual-barcode" className="flex items-center gap-2 text-sm font-semibold"><HiOutlineKeyboard size={18} /> Enter barcode manually</label>
+        <label htmlFor="manual-barcode" className="flex items-center gap-2 text-sm font-semibold"><HiOutlineKey size={18} /> Enter barcode manually</label>
         <div className="mt-3 flex gap-2">
           <input id="manual-barcode" inputMode="numeric" value={barcode} onChange={(event) => { setBarcode(event.target.value); setError(""); }} placeholder="e.g. 051500255162" className="min-w-0 flex-1 rounded-full bg-[#F0F0F0] px-4 text-sm outline-none focus:ring-2 focus:ring-[#1A1A1A]" />
           <button className="min-h-12 rounded-full bg-[#1A1A1A] px-5 text-sm font-semibold text-white">Check</button>
