@@ -1,0 +1,32 @@
+name: Veil web check
+
+on:
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/veil-web-check.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "web/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
