@@ -1,7 +1,7 @@
 import type { Session, User } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { signOut as oauthSignOut } from "@/lib/auth/oauth";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabase } from "@/lib/supabase/client";
 
 interface AuthState {
   session: Session | null;
@@ -12,6 +12,9 @@ interface AuthState {
   signOut: () => Promise<void>;
   hydrateFromSupabase: () => Promise<void>;
 }
+
+/** Shared in-flight hydration so concurrent callers don't hit storage twice. */
+let hydration: Promise<void> | null = null;
 
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
@@ -28,22 +31,35 @@ export const useAuthStore = create<AuthState>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
 
   signOut: async () => {
-    await oauthSignOut();
-    set({ session: null, user: null, isLoading: false });
+    try {
+      await oauthSignOut();
+    } finally {
+      // Always clear local state, even if the network sign-out failed.
+      set({ session: null, user: null, isLoading: false });
+    }
   },
 
-  hydrateFromSupabase: async () => {
-    if (!supabase) {
-      set({ isLoading: false });
-      return;
-    }
-
-    const { data } = await supabase.auth.getSession();
-    set({
-      session: data.session,
-      user: data.session?.user ?? null,
-      isLoading: false,
-    });
+  hydrateFromSupabase: () => {
+    hydration ??= (async () => {
+      try {
+        const client = await getSupabase();
+        if (!client) {
+          set({ isLoading: false });
+          return;
+        }
+        const { data } = await client.auth.getSession();
+        set({
+          session: data.session,
+          user: data.session?.user ?? null,
+          isLoading: false,
+        });
+      } catch {
+        set({ isLoading: false });
+      } finally {
+        hydration = null;
+      }
+    })();
+    return hydration;
   },
 }));
 

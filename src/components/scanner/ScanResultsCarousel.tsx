@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MainProductDetails from "@/components/common/MainProductDetails";
 import { ScanAddProductSlide } from "@/components/scanner/ScanAddProductSlide";
 import { scanResultToView } from "@/lib/scanner/scanResultView";
@@ -51,6 +51,8 @@ export function ScanResultsCarousel({
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Memoised so MainProductDetails (memo) doesn't re-render on every scroll event.
+  const views = useMemo(() => scanResults.map(scanResultToView), [scanResults]);
   const slideCount = scanResults.length + 1;
   const isAddSlide = activeIndex >= scanResults.length;
 
@@ -59,11 +61,20 @@ export function ScanResultsCarousel({
     const el = scrollRef.current;
     if (!el || el.clientWidth === 0) return;
     const index = Math.round(el.scrollLeft / el.clientWidth);
-    setActiveIndex(Math.min(Math.max(index, 0), slideCount - 1));
+    const next = Math.min(Math.max(index, 0), slideCount - 1);
+    // Bail out early: scroll fires ~60×/s and the index rarely changes.
+    setActiveIndex((prev) => (prev === next ? prev : next));
   }, [expanded, slideCount]);
 
-  useEffect(() => {
+  // New scan → back to the first slide (adjusting state during render is the
+  // React-recommended alternative to a reset-in-effect).
+  const [prevResults, setPrevResults] = useState(scanResults);
+  if (prevResults !== scanResults) {
+    setPrevResults(scanResults);
     setActiveIndex(0);
+  }
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ left: 0, behavior: "instant" });
   }, [scanResults]);
 
@@ -86,7 +97,7 @@ export function ScanResultsCarousel({
           ) : (
             <MainProductDetails
               showBody
-              item={scanResultToView(scanResults[activeIndex]!)}
+              item={views[activeIndex]!}
             />
           )}
         </div>
@@ -103,15 +114,15 @@ export function ScanResultsCarousel({
         style={{ touchAction: "pan-x" }}
         aria-roledescription="carousel"
       >
-        {scanResults.map((result) => (
+        {views.map((view) => (
           <div
-            key={result.product.id}
+            key={view.id}
             className="flex h-full min-h-0 w-full shrink-0 snap-start snap-always items-stretch overflow-hidden px-4"
           >
             <div className="flex w-full min-h-0 flex-col justify-center">
               <MainProductDetails
                 showBody={false}
-                item={scanResultToView(result)}
+                item={view}
               />
             </div>
           </div>

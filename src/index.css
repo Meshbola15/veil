@@ -1,5 +1,8 @@
-/* @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap'); */
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+/* Self-hosted variable fonts: bundled with the app (works offline in the
+   native shell, no render-blocking round trip to Google Fonts). Each file
+   declares unicode-range subsets, so only the glyph ranges a page uses load. */
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/bricolage-grotesque/wght.css";
 @import "tailwindcss";
 
 
@@ -11,10 +14,10 @@
 @theme {
 
   /* ── Fonts ───────────────────────────────── */
-  --font-bricolage: "Bricolage Grotesque", serif;
-  --font-inter: "Inter", sans-serif;
-  --font-raleway: "Raleway", sans-serif;
-  --font-manrope: "Manrope", sans-serif;
+  --font-bricolage: "Bricolage Grotesque Variable", "Bricolage Grotesque",
+    ui-sans-serif, system-ui, sans-serif;
+  --font-inter: "Inter Variable", "Inter", ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* ── Colors ──────────────────────────────── */
 
@@ -133,6 +136,7 @@
   }
 
   body {
+    background-color: var(--color-background);
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
@@ -145,11 +149,6 @@
     overflow: hidden;
   }
 
-  /* Apply Fraunces to all numeric score displays */
-  .font-fraunces {
-    font-family: var(--font-fraunces);
-    font-optical-sizing: auto;
-  }
 
   * {
     box-sizing: border-box;
@@ -162,14 +161,6 @@
 
   .text-text-neutral {
     @apply text-neutral-400;
-  }
-
-  .text-text-secondary {
-    @apply text-text-secondary;
-  }
-
-  .text-text-primary {
-    @apply text-text-primary;
   }
 
   h1,
@@ -189,6 +180,16 @@
    ============================================ */
 
 @layer components {
+
+  /* Pressable surfaces: instant, subtle tactile feedback */
+  .pressable {
+    transition: transform var(--duration-fast) var(--ease-smooth),
+      opacity var(--duration-fast) var(--ease-smooth);
+  }
+
+  .pressable:active {
+    transform: scale(0.98);
+  }
 
   /* Card */
   .card {
@@ -261,7 +262,7 @@
 
   /* Onboarding — reference layout typography */
   .onboarding-title {
-    font-family: var(--font-fraunces);
+    font-family: var(--font-bricolage);
     font-size: clamp(2.25rem, 9vw, 2.75rem);
     font-weight: 700;
     line-height: 1.02;
@@ -321,4 +322,65 @@
     background: transparent !important;
   }
 
+}
+
+/* ============================================
+   Motion (CSS-only, replaces framer-motion for simple enters)
+   ============================================ */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 300ms var(--ease-smooth) both;
+}
+
+@utility animate-sheet-up {
+  animation: sheet-up 300ms var(--ease-smooth) both;
+}
+
+@utility animate-fade-in {
+  animation: fade-in 200ms var(--ease-smooth) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }

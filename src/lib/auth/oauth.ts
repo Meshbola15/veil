@@ -1,6 +1,5 @@
-import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase/client";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export type OAuthProvider = "google" | "apple";
 
@@ -8,29 +7,32 @@ function getRedirectUrl(): string {
   return `${window.location.origin}/auth/callback`;
 }
 
-function assertSupabase() {
-  if (!isSupabaseConfigured || !supabase) {
+async function requireSupabase() {
+  const client = isSupabaseConfigured ? await getSupabase() : null;
+  if (!client) {
     throw new Error(
       "Sign-in is not configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment.",
     );
   }
-  return supabase;
+  return client;
 }
 
 export async function signInWithProvider(provider: OAuthProvider): Promise<void> {
-  const client = assertSupabase();
+  const client = await requireSupabase();
+  const isNative = Capacitor.isNativePlatform();
 
   const { data, error } = await client.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo: getRedirectUrl(),
-      skipBrowserRedirect: Capacitor.isNativePlatform(),
+      skipBrowserRedirect: isNative,
     },
   });
 
   if (error) throw error;
 
-  if (Capacitor.isNativePlatform() && data.url) {
+  if (isNative && data.url) {
+    const { Browser } = await import("@capacitor/browser");
     await Browser.open({ url: data.url });
   }
 }
@@ -44,7 +46,8 @@ export function signInWithApple(): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
-  if (!supabase) return;
-  const { error } = await supabase.auth.signOut();
+  const client = await getSupabase();
+  if (!client) return;
+  const { error } = await client.auth.signOut();
   if (error) throw error;
 }

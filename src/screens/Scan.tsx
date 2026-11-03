@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Camera from "@/components/scanner/camera";
 import { ScanResultSheet } from "@/components/scanner/ScanResultSheet";
@@ -9,6 +9,7 @@ import type { ScanResult } from "@/types";
 import DashboardNavigation from "@/components/common/DashboardNavigation";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import beep from "@/assets/audio/beep.mp3";
+import { useLatest } from "@/hooks/useLatest";
 
 export default function ScanPage() {
   const navigate = useNavigate();
@@ -24,6 +25,26 @@ export default function ScanPage() {
   // doesn't keep re-firing while a different product replaces the result.
   const activeBarcodeRef = useRef<string | null>(null);
 
+  // One preloaded <audio> reused for every scan: no per-scan decode/allocation,
+  // so the beep plays without latency.
+  const beepRef = useRef<HTMLAudioElement | null>(null);
+  const soundMutedRef = useLatest(soundMuted);
+
+  useEffect(() => {
+    if (soundMuted || beepRef.current) return;
+    const audio = new Audio(beep);
+    audio.preload = "auto";
+    beepRef.current = audio;
+  }, [soundMuted]);
+
+  useEffect(
+    () => () => {
+      beepRef.current?.pause();
+      beepRef.current = null;
+    },
+    [],
+  );
+
   const isSheetVisible = Boolean(
     detection && scanResults && scanResults.length > 0,
   );
@@ -38,21 +59,23 @@ export default function ScanPage() {
       setScanResults(matches);
       setCurrentResult(primary);
       addToHistory(primary);
-      void Haptics.impact({ style: ImpactStyle.Medium });
-      if (!soundMuted) {
-        void new Audio(beep).play().catch(() => undefined);
+      void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => undefined);
+      const audio = beepRef.current;
+      if (!soundMutedRef.current && audio) {
+        audio.currentTime = 0;
+        void audio.play().catch(() => undefined);
       }
     },
-    [addToHistory, setCurrentResult, soundMuted],
+    [addToHistory, setCurrentResult, soundMutedRef],
   );
 
-  const handleDismissResult = () => {
+  const handleDismissResult = useCallback(() => {
     activeBarcodeRef.current = null;
     setDetection(null);
     setScanResults(null);
     setCurrentResult(null);
     setScanSession((n) => n + 1);
-  };
+  }, [setCurrentResult]);
 
   const handleAddProduct = useCallback(() => {
     // TODO: navigate to community product submission flow

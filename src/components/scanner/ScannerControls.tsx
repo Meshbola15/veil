@@ -1,7 +1,5 @@
 import { memo, useCallback, useEffect, useState } from "react";
 import {
-  HiBolt,
-  HiOutlineBolt,
   HiOutlineSpeakerWave,
   HiOutlineSpeakerXMark,
 } from "react-icons/hi2";

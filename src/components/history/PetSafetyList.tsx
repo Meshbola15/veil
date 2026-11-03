@@ -5,7 +5,6 @@ import {
   getPetTierBadgeClass,
   getPetTierBadgeLabel,
 } from "@/lib/utils";
-import { IoPawOutline } from "react-icons/io5";
 import { PET_NAME_ICONS } from "@/data/constants";
 
 interface PetSafetyListProps {

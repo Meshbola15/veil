@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabase } from "@/lib/supabase/client";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useOnboardingStore } from "@/stores/useOnboardingStore";
 
@@ -13,7 +12,11 @@ export default function AuthCallback() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const finish = async () => {
+      const supabase = await getSupabase().catch(() => null);
+      if (cancelled) return;
       if (!supabase) {
         setError("Sign-in is not configured.");
         return;
@@ -46,13 +49,18 @@ export default function AuthCallback() {
       }
 
       if (Capacitor.isNativePlatform()) {
+        const { Browser } = await import("@capacitor/browser");
         await Browser.close().catch(() => undefined);
       }
 
+      if (cancelled) return;
       navigate(onboardingComplete ? "/home" : "/onboarding", { replace: true });
     };
 
     void finish();
+    return () => {
+      cancelled = true;
+    };
   }, [navigate, onboardingComplete, setSession]);
 
   return (

@@ -1,8 +1,5 @@
 import { useOnboardingStore } from "@/stores/useOnboardingStore";
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Button from "@/components/common/button";
 import DashboardNavigation from "@/components/common/DashboardNavigation";
 
 export default function Home() {
