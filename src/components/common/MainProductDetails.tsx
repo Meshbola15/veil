@@ -1,24 +1,12 @@
-import React from "react";
-import type { ScanResultView } from "@/types";
+import { memo, useMemo, useState, type ReactNode } from "react";
+import type { FlaggedIngredient, ScanResultView } from "@/types";
 import { SectionHeader } from "./SectionHeader";
 import { images } from "@/assets/images";
-import DashboardHeader from "@/components/common/DashboardHeader";
 import { FlaggedIngredientList } from "@/components/history/FlaggedIngredientList";
 import { PetSafetyList } from "@/components/history/PetSafetyList";
-import {
-  ChevronDownIcon,
-  FavoritesIcon,
-  InfoIcon,
-  MessageCircleIcon,
-  ShareIcon,
-  ThreeDotsIcon,
-} from "@/lib/icons";
-import { cn, getScoreTextAndColor } from "@/lib/utils";
+import { FavoritesIcon, InfoIcon, ShareIcon } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 import { getFlaggedIngredient, mockScan } from "@/data/mock";
-import { useNavigate, useParams } from "react-router-dom";
-import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import type { FlaggedIngredient } from "@/types";
 import ProductDetails from "@/components/common/ProductDetails";
 
 type Props = {
@@ -26,9 +14,50 @@ type Props = {
   showBody?: boolean;
 };
 
+const TIER_BAR = [
+  { key: "high", color: "bg-score-avoid", label: "high concern" },
+  { key: "moderate", color: "bg-score-caution", label: "moderate" },
+  { key: "low", color: "bg-score-safe", label: "low" },
+] as const;
+
+function DotSeparator() {
+  return <span className="size-1 rounded-full bg-text-secondary" aria-hidden />;
+}
+
+function IngredientsCount({ text }: { text: string }) {
+  return (
+    <p className="font-inter text-sm font-semibold text-nowrap text-text-neutral">
+      {text}
+    </p>
+  );
+}
+
+function ActionCard({
+  title,
+  icon,
+  onClick,
+}: {
+  title: string;
+  icon: ReactNode;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="pressable flex w-full items-center gap-2 rounded-2xl bg-white p-4 text-left shadow-card"
+    >
+      {icon}
+      <span className="font-inter text-sm font-semibold text-text-primary">
+        {title}
+      </span>
+    </button>
+  );
+}
+
 const MainProductDetails = ({ item: itemProp, showBody = true }: Props) => {
   const item = itemProp ?? mockScan;
-  const navigate = useNavigate();
+  const [ingredientsListExpanded, setIngredientsListExpanded] = useState(false);
 
   const flaggedIngredients = useMemo(
     () =>
@@ -41,82 +70,16 @@ const MainProductDetails = ({ item: itemProp, showBody = true }: Props) => {
     [item.flaggedIngredients],
   );
 
-  const highConcernIngredients = flaggedIngredients.filter(
-    (ingredient) => ingredient.concernLevel === "high",
-  );
-  const moderateConcernIngredients = flaggedIngredients.filter(
-    (ingredient) => ingredient.concernLevel === "moderate",
-  );
-  const lowConcernIngredients = flaggedIngredients.filter(
-    (ingredient) => ingredient.concernLevel === "low",
-  );
+  const tierCounts = useMemo(() => {
+    const counts = { high: 0, moderate: 0, low: 0 };
+    for (const ingredient of flaggedIngredients) {
+      counts[ingredient.concernLevel] += 1;
+    }
+    return counts;
+  }, [flaggedIngredients]);
 
-  const ingredientsTeir = {
-    high: highConcernIngredients.length,
-    moderate: moderateConcernIngredients.length,
-    low: lowConcernIngredients.length,
-  };
+  const flaggedTotal = tierCounts.high + tierCounts.moderate + tierCounts.low;
 
-  const DotSeperator = () => {
-    return <div className="size-1 rounded-full bg-text-secondary" />;
-  };
-
-  const IngredientsTeirBar = {
-    high: {
-      color: "bg-red-500",
-      width: `${(ingredientsTeir.high / (ingredientsTeir.high + ingredientsTeir.moderate + ingredientsTeir.low)) * 100}%`,
-    },
-    moderate: {
-      color: "bg-yellow-500",
-      width: `${(ingredientsTeir.moderate / (ingredientsTeir.high + ingredientsTeir.moderate + ingredientsTeir.low)) * 100}%`,
-    },
-    low: {
-      color: "bg-green-500",
-      width: `${(ingredientsTeir.low / (ingredientsTeir.high + ingredientsTeir.moderate + ingredientsTeir.low)) * 100}%`,
-    },
-  };
-  const [isMoreOptionsModalOpen, setIsMoreOptionsModalOpen] = useState(false);
-
-  const MoreOptionsModal = () => {
-    return (
-      <div className="absolute top-0 right-0 bg-white shadow-card rounded-2xl p-4">
-        <p>More Options</p>
-      </div>
-    );
-  };
-
-  const IngredientsCount = ({ text }: { text: string }) => (
-    <p className="text-sm capitalize text-nowrap font-inter font-[600] text-text-neutral">
-      {text}
-    </p>
-  );
-
-  const ActionCards = ({
-    title,
-    icon,
-    onClick,
-    rightComponent,
-  }: {
-    title: string;
-    icon: React.ReactNode;
-    onClick: () => void;
-    rightComponent?: React.ReactNode;
-  }) => {
-    return (
-      <div className="p-4 bg-white rounded-2xl shadow-card flex flex-row gap">
-        <div className="flex flex-row gap-2">
-          {icon}
-          <p className="text-sm font-inter font-[600] text-text-primary">
-            {title}
-          </p>
-        </div>
-        {rightComponent && rightComponent}
-      </div>
-    );
-  };
-
-  const [isIngredientsListExpanded, setIsIngredientsListExpanded] =
-    useState(false);
   return (
     <main className="flex flex-col gap-4">
       <ProductDetails
@@ -126,130 +89,104 @@ const MainProductDetails = ({ item: itemProp, showBody = true }: Props) => {
         isFavourite={false}
       />
 
-      <AnimatePresence mode="wait">
-        {showBody && (
-          <motion.div
-            key="product-details-body"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="gap-4 flex flex-col"
-          >
-            <div className="section-container">
-              <SectionHeader
-                title="Ingredients"
-                image={images.IngredientsIcon}
-              />
+      {showBody && (
+        <div className="animate-fade-up flex flex-col gap-4">
+          <section className="section-container">
+            <SectionHeader title="Ingredients" image={images.IngredientsIcon} />
 
-              <div className="flex items-center gap-1 flex-wrap">
-                <IngredientsCount
-                  text={`${ingredientsTeir.high + ingredientsTeir.moderate + ingredientsTeir.low} ingredients`}
-                />
-
-                <DotSeperator />
-                <IngredientsCount
-                  text={`${ingredientsTeir.high} high concern`}
-                />
-
-                <DotSeperator />
-                <IngredientsCount
-                  text={`${ingredientsTeir.moderate} moderate`}
-                />
-
-                <DotSeperator />
-                <IngredientsCount text={`${ingredientsTeir.low} low`} />
-              </div>
-
-              <div className="flex items-center gap-0.5 my-4">
-                {/* high concern ingredients */}
-                <div
-                  style={{ width: IngredientsTeirBar.high.width }}
-                  className={cn(
-                    "h-2 rounded-full",
-                    IngredientsTeirBar.high.color,
-                  )}
-                />
-                {/* high concern ingredients */}
-                <div
-                  style={{ width: IngredientsTeirBar.moderate.width }}
-                  className={cn(
-                    "h-2 rounded-full",
-                    IngredientsTeirBar.moderate.color,
-                  )}
-                />
-                {/* low concern ingredients */}
-                <div
-                  style={{ width: IngredientsTeirBar.low.width }}
-                  className={cn(
-                    "h-2 rounded-full",
-                    IngredientsTeirBar.low.color,
-                  )}
-                />
-              </div>
-
-              <FlaggedIngredientList
-                ingredients={flaggedIngredients}
-                onIngredientInfo={(ingredient) => {
-                  console.log("ingredient detail", ingredient.id);
-                }}
-              />
+            <div className="flex flex-wrap items-center gap-1">
+              <IngredientsCount text={`${flaggedTotal} flagged`} />
+              {TIER_BAR.map((tier) => (
+                <span key={tier.key} className="flex items-center gap-1">
+                  <DotSeparator />
+                  <IngredientsCount
+                    text={`${tierCounts[tier.key]} ${tier.label}`}
+                  />
+                </span>
+              ))}
             </div>
 
-            <div
-              className="section-container"
-              onClick={() =>
-                setIsIngredientsListExpanded(!isIngredientsListExpanded)
-              }
+            {flaggedTotal > 0 && (
+              <div
+                className="my-4 flex items-center gap-0.5"
+                role="img"
+                aria-label={`${tierCounts.high} high, ${tierCounts.moderate} moderate, ${tierCounts.low} low concern ingredients`}
+              >
+                {TIER_BAR.map((tier) =>
+                  tierCounts[tier.key] > 0 ? (
+                    <div
+                      key={tier.key}
+                      style={{
+                        width: `${(tierCounts[tier.key] / flaggedTotal) * 100}%`,
+                      }}
+                      className={cn("h-2 rounded-full", tier.color)}
+                    />
+                  ) : null,
+                )}
+              </div>
+            )}
+
+            <FlaggedIngredientList ingredients={flaggedIngredients} />
+          </section>
+
+          <section className="section-container">
+            <button
+              type="button"
+              className="w-full text-left"
+              onClick={() => setIngredientsListExpanded((open) => !open)}
+              aria-expanded={ingredientsListExpanded}
             >
               <SectionHeader
                 title="Ingredients list"
                 image={images.IngredientsIcon}
+                rightComponent={
+                  <span className="font-inter text-xs font-semibold text-text-secondary">
+                    {item.ingredients.length}
+                  </span>
+                }
               />
-              <div className="flex flex-wrap gap-0.5">
-                {item.ingredients.map((ingredient, index) => (
-                  <div key={ingredient} className="flex items-center">
-                    <p className=" text-sm font-inter text-text-secondary">
-                      {ingredient}
-                    </p>
-                    {index < item.ingredients.length - 1 && (
-                      <span className="text-sm text-text-secondary">,</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 rounded-2xl bg-white p-4">
-              <SectionHeader title="Pet Safety" image={images.PetSafetyIcon} />
-              <PetSafetyList petFlags={item.petFlags} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <ActionCards
-                title="Add to favourites"
-                icon={<FavoritesIcon className="size-5" />}
-                onClick={() => {}}
-              />
-              {/* <ActionCards
-                title="Ask Veil AI"
-                icon={<MessageCircleIcon className="size-5" />}
-                onClick={() => {}}
-              /> */}
-              <ActionCards
-                title="Share"
-                icon={<ShareIcon className="size-5" />}
-                onClick={() => {}}
-              />
-              <ActionCards
-                title="Report"
-                icon={<InfoIcon className="size-5" />}
-                onClick={() => {}}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </button>
+            <p
+              className={cn(
+                "font-inter text-sm leading-relaxed text-text-secondary",
+                !ingredientsListExpanded && "line-clamp-3",
+              )}
+            >
+              {item.ingredients.join(", ")}
+            </p>
+          </section>
+
+          <section className="section-container gap-2">
+            <SectionHeader title="Pet Safety" image={images.PetSafetyIcon} />
+            <PetSafetyList petFlags={item.petFlags} />
+          </section>
+
+          <div className="flex flex-col gap-2">
+            <ActionCard
+              title="Add to favourites"
+              icon={<FavoritesIcon className="size-5" aria-hidden />}
+            />
+            <ActionCard
+              title="Share"
+              icon={<ShareIcon className="size-5" aria-hidden />}
+              onClick={
+                typeof navigator.share === "function"
+                  ? () =>
+                      void navigator
+                        .share({ title: item.name, text: `${item.name} — ${item.brand}` })
+                        .catch(() => undefined)
+                  : undefined
+              }
+            />
+            <ActionCard
+              title="Report"
+              icon={<InfoIcon className="size-5" aria-hidden />}
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 };
 
-export default MainProductDetails;
+export default memo(MainProductDetails);

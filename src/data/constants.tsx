@@ -290,6 +290,10 @@ export const PET_NAME_ICONS: Record<string, string> = {
   rabbit: images.rabbit,
   rat: images.rat,
   snake: images.snake,
+  // PetSpecies values that have no dedicated illustration yet.
+  small_mammal: images.rat,
+  reptile: images.snake,
+  other: images.dog,
 };
 
 export function riskByIcon(iconTag: RiskIconTag): RiskTag {

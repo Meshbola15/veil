@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Hammer from "hammerjs";
+import { useLatest } from "@/hooks/useLatest";
 import { ScanDetailsContent } from "@/components/scanner/ScanDetailsContent";
 import type { BarcodeDetection } from "@/lib/scanner/barcode";
 import type { ScanResult } from "@/types";
@@ -57,10 +58,8 @@ export function ScanResultSheet({
     velocityY: 0,
   });
 
-  const snapRef = useRef(snap);
-  const dragPxRef = useRef(dragPx);
-  snapRef.current = snap;
-  dragPxRef.current = dragPx;
+  const snapRef = useLatest(snap);
+  const dragPxRef = useLatest(dragPx);
 
   const getMetrics = useCallback(() => {
     const height = sheetRef.current?.getBoundingClientRect().height ?? 0;
@@ -72,28 +71,23 @@ export function ScanResultSheet({
     if (dragPxRef.current !== null) return dragPxRef.current;
     const { peekPx } = getMetrics();
     return snapRef.current === "full" ? 0 : peekPx;
-  }, [getMetrics]);
+  }, [getMetrics, snapRef, dragPxRef]);
 
-  const resetToPeek = useCallback(() => {
-    setSnap("peek");
-    setDragPx(null);
-  }, []);
-
+  // The sheet mounts fresh for every result (see Scan.tsx), so it always
+  // starts at "peek"; slide in on the next frame.
   useEffect(() => {
-    if (!open) {
-      setEntered(false);
-      return;
-    }
-    resetToPeek();
+    if (!open) return;
     const frame = requestAnimationFrame(() => setEntered(true));
-    return () => cancelAnimationFrame(frame);
-  }, [open, resetToPeek]);
+    return () => {
+      cancelAnimationFrame(frame);
+      setEntered(false);
+    };
+  }, [open]);
 
   const finishDrag = useCallback(() => {
     const { peekPx } = getMetrics();
     const y =
-      dragPxRef.current ??
-      (snapRef.current === "full" ? 0 : peekPx);
+      dragPxRef.current ?? (snapRef.current === "full" ? 0 : peekPx);
     const { velocityY } = dragRef.current;
     const flingUp = velocityY < -SNAP_VELOCITY_PX_MS;
     const flingDown = velocityY > SNAP_VELOCITY_PX_MS;
@@ -111,7 +105,7 @@ export function ScanResultSheet({
     }
 
     setSnap("peek");
-  }, [getMetrics, onDismiss]);
+  }, [getMetrics, onDismiss, snapRef, dragPxRef]);
 
   const isExpanded = snap === "full";
 

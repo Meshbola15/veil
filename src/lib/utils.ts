@@ -1,26 +1,27 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { PET_SPECIES_OPTIONS } from "@/types/pet";
-import type {
-  ConcernLevel,
-  FlaggedIngredient,
-  PetSpecies,
-  ScoreTier,
-} from "@/types";
-import { mockFlaggedIngredients } from "@/data/mock";
+import type { ConcernLevel, PetSpecies, ScoreTier } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Score bands from the design system (agents.md → Score Badge). */
+export function getScoreTier(score: number): ScoreTier {
+  if (score >= 75) return "safe";
+  if (score >= 40) return "caution";
+  return "avoid";
+}
+
+const SCORE_DISPLAY: Record<ScoreTier, { text: string; color: string }> = {
+  safe: { text: "Great match for you", color: "bg-score-safe" },
+  caution: { text: "Some things to consider", color: "bg-score-caution" },
+  avoid: { text: "May not suit your profile", color: "bg-score-avoid" },
+};
+
 export function getScoreTextAndColor(score: number) {
-  if (score >= 80) {
-    return { text: "Safe", color: "bg-green-500" };
-  } else if (score >= 60) {
-    return { text: "Caution", color: "bg-yellow-500" };
-  } else {
-    return { text: "Avoid", color: "bg-red-500" };
-  }
+  return SCORE_DISPLAY[getScoreTier(score)];
 }
 
 export function formatIngredientName(name: string | string[]): string {
@@ -73,19 +74,3 @@ export function getPetTierBadgeLabel(tier: ScoreTier): string {
 export function getPetTierBadgeClass(tier: ScoreTier): string {
   return PET_TIER_BADGE_CLASS[tier];
 }
-
-export const categories = [
-  { id: "1", name: "Food" },
-  { id: "2", name: "Drink" },
-  { id: "3", name: "Cleaning" },
-  { id: "4", name: "Personal Care" },
-  { id: "5", name: "Home" },
-  { id: "6", name: "Other" },
-  { id: "7", name: "Pet" },
-];
-
-export const getFlaggedIngredient = (name: string): FlaggedIngredient => {
-  return mockFlaggedIngredients.find(
-    (ingredient) => ingredient.name === name,
-  ) as FlaggedIngredient;
-};

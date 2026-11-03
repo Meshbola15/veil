@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { BarcodeDetection } from "@/lib/scanner/barcode";
+import { useLatest } from "@/hooks/useLatest";
 import BarcodeScannerEngine from "@/components/scanner/BarcodeScannerEngine";
 import ScannerViewfinder from "@/components/scanner/ScannerViewfinder";
 import ScannerControls from "@/components/scanner/ScannerControls";
@@ -24,16 +25,22 @@ function Camera({
   soundMuted,
   onSoundMuted,
 }: Props) {
-  const onDetectedRef = useRef(onBarcodeDetected);
-  onDetectedRef.current = onBarcodeDetected;
+  const onDetectedRef = useLatest(onBarcodeDetected);
 
   const [detectedFlash, setDetectedFlash] = useState(false);
+  const flashTimerRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(flashTimerRef.current), []);
 
   const handleDetection = useCallback((value: BarcodeDetection) => {
     setDetectedFlash(true);
-    window.setTimeout(() => setDetectedFlash(false), DETECTED_FLASH_MS);
+    window.clearTimeout(flashTimerRef.current);
+    flashTimerRef.current = window.setTimeout(
+      () => setDetectedFlash(false),
+      DETECTED_FLASH_MS,
+    );
     onDetectedRef.current(value);
-  }, []);
+  }, [onDetectedRef]);
 
   return (
     <div className="absolute inset-0 z-0 h-full w-full overflow-hidden bg-black select-none">

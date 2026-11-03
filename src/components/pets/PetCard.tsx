@@ -1,4 +1,3 @@
-import { TbPaw } from "react-icons/tb";
 import type { Pet } from "@/types/pet";
 import { PET_SPECIES_OPTIONS } from "@/types/pet";
 import { PET_NAME_ICONS } from "@/data/constants";

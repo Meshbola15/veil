@@ -20,9 +20,9 @@ export function FlaggedIngredientList({
   const navigate = useNavigate();
   const openIngredientDetail = (ingredient: FlaggedIngredient) => {
     onIngredientInfo?.(ingredient);
+    // Push (not replace) so "back" returns to the product the user came from.
     navigate(
       `/ingredient-detail?name=${encodeURIComponent(String(ingredient.name))}`,
-      { replace: true },
     );
   };
 
@@ -40,7 +40,7 @@ export function FlaggedIngredientList({
         <li
           key={ingredient.id}
           className={cn(
-            "flex items-center justify-between gap-3 px-1 py-3.5",
+            "pressable flex cursor-pointer items-center justify-between gap-3 px-1 py-3.5",
             index < ingredients.length - 1 && "border-b border-[#F0F0F0]",
           )}
           onClick={() => openIngredientDetail(ingredient)}
@@ -48,7 +48,7 @@ export function FlaggedIngredientList({
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "size-3 rounded-full ",
+                "size-3 shrink-0 rounded-full",
                 getConcernLevelDotClass(ingredient.concernLevel),
               )}
             />

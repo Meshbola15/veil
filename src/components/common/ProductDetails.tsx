@@ -1,8 +1,16 @@
+import { memo } from "react";
 import { images } from "@/assets/images";
 import { FavoritesIcon, FavoritesSolidIcon, ShareIcon } from "@/lib/icons";
 import { cn, getScoreTextAndColor } from "@/lib/utils";
 import type { ScanResultView } from "@/types";
-import React from "react";
+
+type Props = {
+  item: ScanResultView;
+  onClick?: () => void;
+  showFavourites?: boolean;
+  showShare?: boolean;
+  isFavourite?: boolean;
+};
 
 const ProductDetails = ({
   item,
@@ -10,55 +18,77 @@ const ProductDetails = ({
   showFavourites = true,
   showShare = true,
   isFavourite = false,
-}: {
-  item: ScanResultView;
-  onClick?: () => void;
-  showFavourites?: boolean;
-  showShare?: boolean;
-  isFavourite?: boolean;
-}) => {
+}: Props) => {
+  const score = getScoreTextAndColor(item.score);
+  const interactive = Boolean(onClick);
+
   return (
     <div
-      key={item.id}
-      className="section-container flex flex-row items-center gap-4"
+      className={cn(
+        "section-container flex flex-row items-center gap-4",
+        interactive && "pressable cursor-pointer",
+      )}
       onClick={onClick}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={
+        interactive
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
     >
-      <div className="w-20 h-20">
+      <div className="size-20 shrink-0">
         <img
           src={images.emptyBottle}
-          alt={item.name}
-          className="w-full h-full object-contain aspect-auto"
+          alt=""
+          width={80}
+          height={80}
+          decoding="async"
+          className="size-full object-contain"
         />
       </div>
-      <div className="flex flex-col gap-2 w-full">
-        <div>
-          <h5 className="font-bricolage text-lg text-text-primary font-bold">
+      <div className="flex w-full min-w-0 flex-col gap-2">
+        <div className="min-w-0">
+          <h5 className="line-clamp-2 font-bricolage text-lg font-bold text-text-primary">
             {item.name}
           </h5>
-
-          <p className="text-sm text-neutral-400 font-semibold">{item.brand}</p>
+          <p className="truncate text-sm font-semibold text-neutral-400">
+            {item.brand}
+          </p>
         </div>
-        <div className="flex items-end justify-between w-full mt-5">
+        <div className="mt-3 flex w-full items-end justify-between">
           <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "size-3 rounded-full",
-                getScoreTextAndColor(item.score).color,
-              )}
+            <span
+              className={cn("size-3 shrink-0 rounded-full", score.color)}
+              aria-hidden
             />
-
             <div>
-              <p className="text-lg font-bold font-bricolage">
-                {item.score}/100
+              <p className="font-bricolage text-lg font-bold leading-tight">
+                {item.score}
+                <span className="text-text-secondary">/100</span>
               </p>
-              <p className="text-sm font-bold text-text-secondary font-inter">
-                {getScoreTextAndColor(item.score).text}
+              <p className="font-inter text-sm font-bold text-text-secondary">
+                {score.text}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-           {showFavourites && isFavourite ? <FavoritesSolidIcon size={24} className="text-red-500" /> : <FavoritesIcon size={24} />}
-            {showShare && <ShareIcon size={24} />}
+          <div className="flex items-center gap-4 text-text-primary">
+            {showFavourites &&
+              (isFavourite ? (
+                <FavoritesSolidIcon
+                  size={24}
+                  className="text-score-avoid"
+                  aria-label="Favourite"
+                />
+              ) : (
+                <FavoritesIcon size={24} aria-hidden />
+              ))}
+            {showShare && <ShareIcon size={22} aria-hidden />}
           </div>
         </div>
       </div>
@@ -66,4 +96,4 @@ const ProductDetails = ({
   );
 };
 
-export default ProductDetails;
+export default memo(ProductDetails);

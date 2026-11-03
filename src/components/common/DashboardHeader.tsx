@@ -1,12 +1,14 @@
+import { memo, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronBackIcon } from "@/lib/icons";
-import React from "react";
 
 type Props = {
   headerTitle?: string;
-  rightComponents?: React.ReactNode;
+  rightComponents?: ReactNode;
   showBackButton?: boolean;
+  /** Defaults to going back one entry in history. */
   onBack?: () => void;
-  customHeader?: React.ReactNode;
+  customHeader?: ReactNode;
 };
 
 const DashboardHeader = ({
@@ -16,31 +18,37 @@ const DashboardHeader = ({
   onBack,
   customHeader,
 }: Props) => {
+  const navigate = useNavigate();
+  const handleBack = onBack ?? (() => navigate(-1));
+
   return (
-    <div className="py-5">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+    <header className="py-5">
+      <div className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3">
+        <div className="flex items-center">
           {showBackButton && (
-            <button onClick={onBack}>
-              <ChevronBackIcon size={24} />
+            <button
+              type="button"
+              onClick={handleBack}
+              aria-label="Go back"
+              className="pressable flex size-10 items-center justify-center rounded-full bg-surface text-text-primary shadow-card"
+            >
+              <ChevronBackIcon size={20} aria-hidden />
             </button>
           )}
         </div>
+
         {customHeader || (
-          <h1 className="text-xl font-bold font-bricolage text-wrap">
+          <h1 className="truncate text-center font-bricolage text-xl font-bold text-text-primary">
             {headerTitle}
           </h1>
         )}
-        <div>
-          {rightComponents ? (
-            <div className="flex items-center gap-2">{rightComponents}</div>
-          ) : (
-            <div className="w-10" />
-          )}
+
+        <div className="flex min-w-10 items-center justify-end gap-2">
+          {rightComponents}
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 
-export default DashboardHeader;
+export default memo(DashboardHeader);

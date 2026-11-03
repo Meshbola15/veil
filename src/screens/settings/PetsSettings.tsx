@@ -1,12 +1,7 @@
 import Button from "@/components/common/button";
 import DashboardHeader from "@/components/common/DashboardHeader";
-import DrawerComponent from "@/components/common/Drawer";
 import { PetCard } from "@/components/pets/PetCard";
 import type { Pet } from "@/types/pet";
-import { HiOutlinePlus } from "react-icons/hi2";
-import { TbPaw } from "react-icons/tb";
-import { useState } from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const MOCK_PETS: Pet[] = [
@@ -30,8 +25,6 @@ const MOCK_PETS: Pet[] = [
 
 export default function PetsSettings() {
   const pets = MOCK_PETS;
-  const [open, setOpen] = useState(false);
-
   const navigate = useNavigate();
   return (
     <div className="mobile-screen relative h-dvh overflow-y-scroll safe-top bg-background p-4 pb-40">
@@ -56,26 +49,10 @@ export default function PetsSettings() {
           </div>
         )}
 
-        <Button onClick={() => navigate("/settings/pets/add")} className="">
+        <Button onClick={() => navigate("/settings/pets/add")} className="pressable">
           <span className="text-sm font-bold text-white">Add pet</span>
         </Button>
 
-        {/* {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -100 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div>
-              <h4>Add a pet</h4>
-            </div>
-          </motion.div>
-        )} */}
-
-        {/* <DrawerComponent open={open} onOpenChange={setOpen}>
-          <div></div>
-        </DrawerComponent> */}
       </div>
     </div>
   );

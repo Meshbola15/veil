@@ -1,94 +1,96 @@
+import { Suspense, useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthBootstrap } from "@/components/auth/AuthBootstrap";
-import { useAuthStore } from "@/stores/useAuthStore";
-import { useOnboardingStore } from "@/stores/useOnboardingStore";
-import AuthCallback from "@/screens/AuthCallback";
-import Home from "@/screens/Home";
-import LoginPage from "@/screens/signup";
-import OnboardingScreen from "@/screens/OnboardingScreen";
-import ScanPage from "@/screens/Scan";
-import SettingsPage from "@/screens/Settings";
-import RatingPage from "./screens/onboarding/rating";
-import History from "./screens/history/History";
-import Search from "./screens/Search";
-import Overview from "./screens/Overview";
-import Profile from "./screens/Profile";
-import HistoryDetailsPage from "./screens/history/HistoryDetails";
-import IngredientDetails from "./screens/ingredient/IngredientDetails";
-import { useEffect } from "react";
+import RouteFallback from "@/components/common/RouteFallback";
 import { initSafeAreaInsets } from "@/lib/native/safeArea";
-import { StatusBar } from "@capacitor/status-bar";
-import PetsSettings from "./screens/settings/PetsSettings";
-import SettingsLayout from "./screens/settings/SettingsLayout";
-import AddPet from "./screens/settings/AddPet";
+import {
+  lazyRoute,
+  prefetchRoute,
+  whenIdle,
+  type RouteKey,
+} from "@/lib/routes";
 
-// function RootRedirect() {
-//   const authLoading = useAuthStore((s) => s.isLoading);
-//   const isAuthenticated = useAuthStore((s) => Boolean(s.session));
-//   const onboardingComplete = useOnboardingStore((s) => s.isComplete);
+// Route-level code splitting: each screen is its own chunk.
+const LoginPage = lazyRoute("login");
+const AuthCallback = lazyRoute("authCallback");
+const OnboardingScreen = lazyRoute("onboarding");
+const Home = lazyRoute("home");
+const ScanPage = lazyRoute("scan");
+const RatingPage = lazyRoute("rating");
+const History = lazyRoute("history");
+const HistoryDetailsPage = lazyRoute("historyDetails");
+const Search = lazyRoute("search");
+const Overview = lazyRoute("overview");
+const Profile = lazyRoute("profile");
+const SettingsPage = lazyRoute("settings");
+const SettingsLayout = lazyRoute("settingsLayout");
+const PetsSettings = lazyRoute("petsSettings");
+const AddPet = lazyRoute("addPet");
+const IngredientDetails = lazyRoute("ingredientDetails");
 
-//   if (authLoading) {
-//     return (
-//       <div className="mobile-screen flex h-dvh items-center justify-center bg-background">
-//         <div
-//           className="h-9 w-9 animate-spin rounded-full border-2 border-border border-t-text-primary"
-//           aria-label="Loading"
-//         />
-//       </div>
-//     );
-//   }
-
-//   if (!isAuthenticated) {
-//     return <Navigate to="/login" replace />;
-//   }
-
-//   if (!onboardingComplete) {
-//     return <Navigate to="/onboarding" replace />;
-//   }
-
-//   return <Navigate to="/home" replace />;
-// }
+/** Bottom-nav tabs, warmed in idle time so tab switches feel instant. */
+const IDLE_PREFETCH: RouteKey[] = [
+  "history",
+  "search",
+  "profile",
+  "overview",
+  "historyDetails",
+  "scan",
+];
 
 function App() {
   useEffect(() => {
     let cleanup: (() => void) | undefined;
+    let disposed = false;
     void initSafeAreaInsets().then((dispose) => {
-      cleanup = dispose;
+      if (disposed) dispose();
+      else cleanup = dispose;
     });
     return () => {
-      void cleanup?.();
+      disposed = true;
+      cleanup?.();
     };
   }, []);
 
-  // useEffect(() => {
-  //   void StatusBar.setOverlaysWebView({ overlay: true });
-  // }, []);
+  useEffect(() => {
+    // Stagger prefetches so they never compete with the first screen.
+    const cancels: Array<() => void> = [];
+    IDLE_PREFETCH.forEach((key, index) => {
+      cancels.push(whenIdle(() => prefetchRoute(key), 1500 + index * 300));
+    });
+    return () => cancels.forEach((cancel) => cancel());
+  }, []);
 
   return (
     <div className="h-full w-full">
       <AuthBootstrap>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Navigate to="/history" replace />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/onboarding" element={<OnboardingScreen />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/scan" element={<ScanPage />} />
-
-            <Route path="/rating" element={<RatingPage />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/overview" element={<Overview />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<SettingsLayout />}>
-              <Route index element={<SettingsPage />} />
-              <Route path="pets" element={<PetsSettings />} />
-              <Route path="pets/add" element={<AddPet />} />
-            </Route>
-            <Route path="/history/:id" element={<HistoryDetailsPage />} />
-            <Route path="/ingredient-detail" element={<IngredientDetails />} />
-          </Routes>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/history" replace />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/onboarding" element={<OnboardingScreen />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/scan" element={<ScanPage />} />
+              <Route path="/rating" element={<RatingPage />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/history/:id" element={<HistoryDetailsPage />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/overview" element={<Overview />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<SettingsLayout />}>
+                <Route index element={<SettingsPage />} />
+                <Route path="pets" element={<PetsSettings />} />
+                <Route path="pets/add" element={<AddPet />} />
+              </Route>
+              <Route
+                path="/ingredient-detail"
+                element={<IngredientDetails />}
+              />
+              <Route path="*" element={<Navigate to="/history" replace />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </AuthBootstrap>
     </div>

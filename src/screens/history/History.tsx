@@ -1,130 +1,93 @@
-import { images } from "@/assets/images";
-import Button from "@/components/common/button";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardHeader from "@/components/common/DashboardHeader";
 import DashboardNavigation from "@/components/common/DashboardNavigation";
-import DrawerComponent from "@/components/common/Drawer";
 import ProductDetails from "@/components/common/ProductDetails";
-import { mockScan } from "@/data/mock";
-import {
-  ArrowDownIcon,
-  CloseIcon,
-  FavoritesIcon,
-  ShareIcon,
-} from "@/lib/icons";
-import { categories, cn, getScoreTextAndColor } from "@/lib/utils";
-import type { ScanResultView } from "@/types";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { mockScan } from "@/data/mockProducts";
+import { CloseIcon, FavoritesIcon } from "@/lib/icons";
 
-type Props = {};
-
-const History = (props: Props) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isFavouritesModalOpen, setIsFavouritesModalOpen] = useState(false);
-  const navigate = useNavigate();
-  const handleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  // const HistoryDetails = ({ item }: { item: ScanResultView }) => {
-  //   return (
-  //     <div
-  //       key={item.id}
-  //       className="flex items-center gap-4 py-4 bg-white rounded-2xl p-4"
-  //       onClick={() => navigate(`/history/${item.id}`)}
-  //     >
-  //       <div className="w-20 h-full">
-  //         <img
-  //           src={images.emptyBottle}
-  //           alt={item.name}
-  //           className="w-full h-full object-contain aspect-auto"
-  //         />
-  //       </div>
-  //       <div className="flex flex-col gap-2 w-full">
-  //         <h5 className="font-bricolage text-lg text-text-primary font-bold">
-  //           {item.name}
-  //         </h5>
-
-  //         <div className="flex items-end justify-between w-full mt-5">
-  //           <div className="flex items-center gap-2">
-  //             <div
-  //               className={cn(
-  //                 "size-3 rounded-full",
-  //                 getScoreTextAndColor(item.score).color,
-  //               )}
-  //             />
-
-  //             <div>
-  //               <p className="text-lg font-bold font-bricolage">
-  //                 {item.score}/100
-  //               </p>
-  //               <p className="text-sm font-bold text-text-secondary font-inter">
-  //                 {getScoreTextAndColor(item.score).text}
-  //               </p>
-  //             </div>
-  //           </div>
-  //           <div className="flex items-center gap-4">
-  //             <FavoritesIcon size={24} />
-  //             <ShareIcon size={24} />
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
-  function FavouritesModal() {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 100 }}
-        transition={{ duration: 0.3 }}
-        className="absolute top-20 left-2 right-2 bottom-0 safe-top safe-bottom bg-background rounded-t-2xl p-4 shadow-2xl"
+function FavouritesSheet({
+  onClose,
+  onOpenItem,
+}: {
+  onClose: () => void;
+  onOpenItem: (id: string) => void;
+}) {
+  return (
+    <>
+      <div
+        className="animate-fade-in fixed inset-0 z-50 bg-text-primary/30"
+        onClick={onClose}
+        aria-hidden
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Favourites"
+        className="animate-sheet-up safe-bottom fixed inset-x-2 bottom-0 top-20 z-50 mx-auto max-w-md overflow-y-auto rounded-t-3xl bg-background p-4 shadow-modal"
       >
         <DashboardHeader
           headerTitle="Favourites"
-          showBackButton={false}
           rightComponents={
-            <button onClick={() => setIsFavouritesModalOpen(false)}>
-              <CloseIcon size={24} />
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close favourites"
+              className="pressable flex size-10 items-center justify-center rounded-full bg-surface shadow-card"
+            >
+              <CloseIcon size={20} aria-hidden />
             </button>
           }
         />
         <div className="flex flex-col gap-4">
           <ProductDetails
             item={mockScan}
-            onClick={() => navigate(`/history/${mockScan.id}`)}
+            isFavourite
+            onClick={() => onOpenItem(mockScan.id)}
           />
         </div>
-      </motion.div>
-    );
-  }
+      </div>
+    </>
+  );
+}
+
+const History = () => {
+  const [isFavouritesOpen, setIsFavouritesOpen] = useState(false);
+  const navigate = useNavigate();
+  const openItem = (id: string) => navigate(`/history/${id}`);
 
   return (
-    <div className="mobile-screen h-dvh overflow-scroll safe-top safe-bottom bg-background p-4 relative">
+    <div className="mobile-screen safe-top relative h-dvh overflow-y-auto overscroll-contain bg-background px-4">
       <DashboardHeader
         headerTitle="History"
-        showBackButton={false}
         rightComponents={
-          <button onClick={() => setIsFavouritesModalOpen(true)}>
-            <FavoritesIcon size={24} />
+          <button
+            type="button"
+            onClick={() => setIsFavouritesOpen(true)}
+            aria-label="Open favourites"
+            className="pressable flex size-10 items-center justify-center rounded-full bg-surface shadow-card"
+          >
+            <FavoritesIcon size={20} aria-hidden />
           </button>
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 pb-4">
         <ProductDetails
           item={mockScan}
-          onClick={() => navigate(`/history/${mockScan.id}`)}
-          isFavourite={true}
+          onClick={() => openItem(mockScan.id)}
+          isFavourite
         />
       </div>
 
       <DashboardNavigation />
 
-      {isFavouritesModalOpen && <FavouritesModal />}
+      {isFavouritesOpen && (
+        <FavouritesSheet
+          onClose={() => setIsFavouritesOpen(false)}
+          onOpenItem={openItem}
+        />
+      )}
     </div>
   );
 };

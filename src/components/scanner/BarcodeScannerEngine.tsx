@@ -3,12 +3,14 @@ import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import type { BarcodeDetection } from "@/lib/scanner/barcode";
+import { useLatest } from "@/hooks/useLatest";
 import {
   SCANNER_FPS,
   SCANNER_FORMATS,
@@ -36,6 +38,17 @@ type Props = {
  */
 const DETECTION_COOLDOWN_MS = 1000;
 
+/** Stop every media track attached to a <video> inside `root`. */
+function releaseVideoStreams(root: HTMLElement | null): void {
+  root?.querySelectorAll("video").forEach((video) => {
+    const stream = video.srcObject;
+    if (stream instanceof MediaStream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+    video.srcObject = null;
+  });
+}
+
 /**
  * Owns the Html5Qrcode lifecycle only. UI state (flash, sound, overlays)
  * lives in sibling components so scanner start/stop is not retriggered.
@@ -47,16 +60,26 @@ function BarcodeScannerEngine({
   children,
 }: Props) {
   const regionId = useId().replace(/:/g, "");
+  const regionRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const pausedRef = useRef(detectionPaused);
+  /**
+   * Bumped by every stop. A queued start whose generation is no longer
+   * current (unmounted / retried before it ran) is skipped entirely.
+   */
+  const generationRef = useRef(0);
+  /**
+   * Start/stop are serialised through this queue. `scanner.start()` is async
+   * (camera permission + stream negotiation) and html5-qrcode cannot be
+   * stopped mid-start, so overlapping calls used to leak live camera streams
+   * when the screen was left quickly. Each op waits for the previous one.
+   */
+  const opQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const pausedRef = useLatest(detectionPaused);
   const lastAcceptedAtRef = useRef(0);
-  const onDetectedRef = useRef(onBarcodeDetected);
+  const onDetectedRef = useLatest(onBarcodeDetected);
 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  pausedRef.current = detectionPaused;
-  onDetectedRef.current = onBarcodeDetected;
 
   // Re-arm immediately when a new scan session begins (e.g. result dismissed).
   useEffect(() => {
@@ -67,69 +90,111 @@ function BarcodeScannerEngine({
     fitScannerRegionToScreen(regionId);
   }, [regionId]);
 
-  const stopScanner = useCallback(async () => {
-    const scanner = scannerRef.current;
-    scannerRef.current = null;
-    if (!scanner) return;
+  const enqueue = useCallback((op: () => Promise<void>) => {
+    const next = opQueueRef.current.then(op, op);
+    opQueueRef.current = next.catch(() => undefined);
+    return next;
+  }, []);
+
+  const disposeScanner = useCallback(async (scanner: Html5Qrcode) => {
+    // Always attempt stop(): `isScanning` only flips on the first rendered
+    // frame, so checking it skipped stops that landed just before that.
     try {
-      if (scanner.isScanning) await scanner.stop();
+      await scanner.stop();
+    } catch {
+      /* not running */
+    }
+    // Backstop: html5-qrcode drops its stream handle if start fails after the
+    // camera was acquired. Stop anything still attached to our <video>s.
+    releaseVideoStreams(regionRef.current);
+    try {
       scanner.clear();
     } catch {
-      /* already stopped */
+      /* already cleared */
     }
   }, []);
 
-  const startScanner = useCallback(async () => {
-    setError(null);
-    setReady(false);
+  const stopScanner = useCallback(() => {
+    generationRef.current += 1;
+    return enqueue(async () => {
+      const scanner = scannerRef.current;
+      scannerRef.current = null;
+      if (scanner) await disposeScanner(scanner);
+      releaseVideoStreams(regionRef.current);
+    });
+  }, [disposeScanner, enqueue]);
 
-    try {
-      const scanner = new Html5Qrcode(regionId, {
-        verbose: false,
-        formatsToSupport: SCANNER_FORMATS,
-        experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true,
-        },
-      });
-      scannerRef.current = scanner;
+  const startScanner = useCallback(() => {
+    const generation = generationRef.current;
+    const isStale = () => generation !== generationRef.current;
 
-      const cameraId = await pickRearCameraId();
+    return enqueue(async () => {
+      if (isStale()) return;
 
-      await scanner.start(
-        cameraId,
-        {
-          fps: SCANNER_FPS,
-          qrbox: (viewWidth, viewHeight) =>
-            getViewfinderQrBox(viewWidth, viewHeight),
-          disableFlip: false,
-          videoConstraints: {
-            facingMode: { ideal: "environment" },
-            width: { min: 640, ideal: 1280 },
-            height: { min: 480, ideal: 720 },
+      let scanner: Html5Qrcode | null = null;
+      try {
+        scanner = new Html5Qrcode(regionId, {
+          verbose: false,
+          formatsToSupport: SCANNER_FORMATS,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
           },
-        },
-        (text, result) => {
-          if (pausedRef.current) return;
-          const now = Date.now();
-          if (now - lastAcceptedAtRef.current < DETECTION_COOLDOWN_MS) return;
-          lastAcceptedAtRef.current = now;
-          const formatCode = result.result.format?.format;
-          onDetectedRef.current(mapHtml5Detection(text, formatCode));
-        },
-        () => {
-          /* no barcode in frame */
-        },
-      );
+        });
+        scannerRef.current = scanner;
 
-      fitCameraToScreen();
-      requestAnimationFrame(fitCameraToScreen);
-      setReady(true);
-    } catch {
-      setError("Camera unavailable on this device.");
-    }
-  }, [regionId, fitCameraToScreen]);
+        const cameraId = await pickRearCameraId();
+        if (isStale()) return; // the queued stop will dispose it
+
+        await scanner.start(
+          cameraId,
+          {
+            fps: SCANNER_FPS,
+            qrbox: (viewWidth, viewHeight) =>
+              getViewfinderQrBox(viewWidth, viewHeight),
+            disableFlip: false,
+            videoConstraints: {
+              facingMode: { ideal: "environment" },
+              width: { min: 640, ideal: 1280 },
+              height: { min: 480, ideal: 720 },
+            },
+          },
+          (text, result) => {
+            if (pausedRef.current) return;
+            const now = Date.now();
+            if (now - lastAcceptedAtRef.current < DETECTION_COOLDOWN_MS) return;
+            lastAcceptedAtRef.current = now;
+            const formatCode = result.result.format?.format;
+            onDetectedRef.current(mapHtml5Detection(text, formatCode));
+          },
+          () => {
+            /* no barcode in frame */
+          },
+        );
+
+        if (isStale()) return; // the queued stop will dispose it
+
+        fitCameraToScreen();
+        requestAnimationFrame(fitCameraToScreen);
+        setReady(true);
+      } catch {
+        if (scanner && scannerRef.current === scanner) {
+          scannerRef.current = null;
+          await disposeScanner(scanner);
+        }
+        if (!isStale()) setError("Camera unavailable on this device.");
+      }
+    });
+  }, [
+    regionId,
+    fitCameraToScreen,
+    disposeScanner,
+    enqueue,
+    pausedRef,
+    onDetectedRef,
+  ]);
 
   useEffect(() => {
+    // Subscribe to the camera (external system) for the life of the screen.
     void startScanner();
     return () => {
       void stopScanner();
@@ -151,17 +216,24 @@ function BarcodeScannerEngine({
     };
   }, [ready, regionId, fitCameraToScreen]);
 
-  const runtime: ScannerRuntimeValue = {
-    ready,
-    error,
-    retry: () => {
-      void stopScanner().then(() => startScanner());
-    },
-  };
+  // Stable context value: consumers only re-render when ready/error change.
+  const runtime = useMemo<ScannerRuntimeValue>(
+    () => ({
+      ready,
+      error,
+      retry: () => {
+        setError(null);
+        setReady(false);
+        void stopScanner();
+        void startScanner();
+      },
+    }),
+    [ready, error, stopScanner, startScanner],
+  );
 
   return (
     <ScannerRuntimeContext.Provider value={runtime}>
-      <div id={regionId} className="barcode-scanner-region" />
+      <div ref={regionRef} id={regionId} className="barcode-scanner-region" />
 
       {!ready && !error && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
